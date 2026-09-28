@@ -1,0 +1,508 @@
+@import 'tailwindcss';
+
+/*
+ * Keycap design system tokens: a graphite night, white type, chunky keycaps,
+ * and a rainbow only where light would leak from an RGB keyboard. One dark theme.
+ */
+:root {
+  color-scheme: dark;
+
+  --ink: #0b0b0c;
+  --ink-hi: #1c1c1f;
+  --ink-2: #151517;
+  --glass: rgba(21, 21, 23, 0.6);
+  --glass-strong: rgba(21, 21, 23, 0.72);
+  --backdrop: rgba(5, 5, 6, 0.7);
+  --ground: radial-gradient(120% 85% at 50% 0%, var(--ink-hi) 0%, var(--ink) 62%);
+
+  --line: #28282c;
+  --line-hi: #55555c;
+
+  --paper: #f3f3f4;
+  --text-2: #c8c8cf;
+  --text-chip: #d6d6dc;
+  --mute: #8e8e95;
+
+  --cap: #eeeef0;
+  --cap-legend: #141416;
+  --cap-edge: #9a9aa2;
+  --cap-dark: #2a2a2e;
+  --cap-dark-edge: #111111;
+  --case: #1e1e21;
+  --plate: #09090a;
+
+  --rgb-red: #ff5d6c;
+  --rgb-orange: #ffa94d;
+  --rgb-yellow: #ffe45c;
+  --rgb-green: #5ee08a;
+  --rgb-blue: #4fb8ff;
+  --rgb-violet: #8c6cff;
+  --rgb-pink: #ff6ad5;
+  --rainbow: linear-gradient(
+    90deg,
+    var(--rgb-red) 0%,
+    var(--rgb-orange) 18%,
+    var(--rgb-yellow) 34%,
+    var(--rgb-green) 52%,
+    var(--rgb-blue) 70%,
+    var(--rgb-violet) 86%,
+    var(--rgb-pink) 100%
+  );
+  --focus: var(--rgb-blue);
+
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Onest', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --space-2: 6px;
+  --space-3: 10px;
+  --space-4: 14px;
+  --space-5: 18px;
+  --space-6: 22px;
+
+  --r-chip: 6px;
+  --r-key: 8px;
+  --r-panel: 12px;
+  --r-sheet: 18px;
+  --r-pill: 999px;
+
+  --sh-key: 0 3px 0 var(--cap-dark-edge), 0 4px 10px rgba(0, 0, 0, 0.5);
+  --sh-key-light: 0 3px 0 var(--cap-edge), 0 4px 10px rgba(0, 0, 0, 0.5);
+  --sh-key-pressed: 0 1px 0 var(--cap-dark-edge);
+  --blur-glass: blur(8px);
+
+  --ease-enter: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-press: 80ms;
+  --dur-hover: 200ms;
+  --dur-ring: 300ms;
+}
+
+html {
+  background: var(--ink);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--ground) fixed, var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* The 3D keyboard: one fixed canvas behind the UI. Pointer input goes to the page. */
+.kc-stage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100lvh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Text helpers. */
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.rainbow-text {
+  background: var(--rainbow);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Layout. */
+.kc-main {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 540px;
+  min-height: 100dvh;
+  padding: 28px var(--gutter);
+}
+
+.kc-head,
+.kc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.kc-title {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 12vw, 3.9rem);
+  line-height: 0.9;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.kc-head {
+  flex-wrap: nowrap;
+}
+
+.kc-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+}
+
+.btn-icon {
+  display: none;
+  flex-shrink: 0;
+}
+
+.hint-touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .hint-keys {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
+
+  .kc-dpad:not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .kc-actions {
+    gap: 8px;
+  }
+
+  .kc-actions .btn-primary,
+  .kc-actions .btn-ghost {
+    width: 40px;
+    padding: 0;
+  }
+
+  .kc-actions .btn-icon {
+    display: block;
+  }
+
+  .kc-actions .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.kc-hint {
+  flex: 1 1 200px;
+  max-width: 34ch;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--text-2);
+}
+
+/* Buttons. */
+.btn-primary,
+.btn-ghost {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 9px 18px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-primary {
+  isolation: isolate;
+  border: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The rainbow ring on hover. */
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--rainbow);
+  opacity: 0;
+  transition: opacity var(--dur-ring);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-ghost {
+  border: 1px solid var(--line);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+  color: var(--paper);
+  font-weight: 500;
+  transition: border-color var(--dur-hover);
+}
+
+.btn-ghost:hover {
+  border-color: var(--line-hi);
+}
+
+/* Keys in HTML. */
+kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  box-shadow: var(--sh-key-light);
+}
+
+kbd.rgb {
+  background: var(--rainbow);
+}
+
+.keybtn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-key);
+  background: var(--cap-dark);
+  color: var(--text-chip);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  box-shadow: var(--sh-key);
+  cursor: pointer;
+  transition:
+    transform var(--dur-press),
+    box-shadow var(--dur-press);
+}
+
+.keybtn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--sh-key-pressed);
+}
+
+.keybtn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.kc-dpad {
+  margin-left: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(2, 44px);
+  gap: 8px;
+}
+
+/* Stats readout: glass over the 3D scene, mono labels, display numbers. */
+.kc-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+}
+
+.kc-stat {
+  position: relative;
+  min-width: 0;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.kc-stat + .kc-stat {
+  border-left: 1px solid var(--line);
+}
+
+.kc-stat-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+.kc-stat-value {
+  display: block;
+  margin: 2px 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(13px, 3.6vw, 16px);
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Board slot. In 3D mode it is transparent: the keyboard is drawn behind it. */
+.board {
+  --gap: clamp(8px, 2.6vw, 12px);
+  /* Short screens: keep the whole console in view. */
+  max-width: max(260px, calc(100dvh - 330px));
+  margin-inline: auto;
+}
+
+.board.is-flat {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sheet);
+  background: var(--case);
+  box-shadow:
+    inset 0 0 0 var(--gap) var(--case),
+    0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.board.is-flat .kc-cell {
+  border-radius: var(--r-key);
+  background: var(--plate);
+}
+
+.kc-flat-cap {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  box-shadow:
+    inset 0 -4px 0 rgba(0, 0, 0, 0.22),
+    0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Win and game-over sheet over the board. */
+.kc-outcome {
+  border-radius: var(--r-sheet);
+  background: var(--backdrop);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.sheet {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: var(--space-4);
+  width: min(380px, 100%);
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sheet);
+  background: var(--ink-2);
+}
+
+/* The one surface with a rainbow top edge. */
+.sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--rainbow);
+}
+
+.kc-outcome-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.kc-outcome-body {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.kc-outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+@keyframes kc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kc-outcome .sheet {
+    animation: kc-pop 350ms var(--ease-pop);
+  }
+}
+
+/* Reduced motion: state still changes, nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::before,
+  .btn-ghost,
+  .keybtn {
+    transition: none;
+  }
+  .keybtn:active:not(:disabled) {
+    transform: none;
+  }
+}
