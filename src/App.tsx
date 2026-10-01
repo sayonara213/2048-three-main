@@ -2,6 +2,7 @@ import { RotateCcw } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { describeMove, describeOutcome } from './announce'
 import { Board } from './components/Board'
+import { CheerButton } from './components/CheerButton'
 import { DirectionPad } from './components/DirectionPad'
 import { Outcome } from './components/Outcome'
 import { ScoreBoard } from './components/ScoreBoard'
@@ -96,6 +97,8 @@ function Game() {
       <div role="alert" aria-atomic="true" className="sr-only">
         {outcome}
       </div>
+
+      <CheerButton />
     </main>
   )
 }

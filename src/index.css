@@ -198,6 +198,50 @@ body {
   }
 }
 
+/* Cheer button, touch screens only. */
+.kc-cheer {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .kc-cheer {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+}
+
+.kc-cheer-btn {
+  width: 40px;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.kc-cheer-popup {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+  color: var(--paper);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kc-cheer-popup {
+    animation: kc-pop 250ms var(--ease-pop);
+  }
+}
+
 @media (max-width: 640px) {
   .kc-actions {
     gap: 8px;
